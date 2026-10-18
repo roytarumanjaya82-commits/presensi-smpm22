@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm p-4">
+    <h4 class="mb-3">Rekap Bulanan Presensi per Kelas</h4>
+    <form method="GET" action="/rekap-bulanan" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select name="kelas_id" class="form-select" required>
+                <option value="">-- Pilih Kelas --</option>
+                {% for k in kelas_list %}
+                <option value="{{ k.id }}" {% if selected_kelas|int == k.id %}selected{% endif %}>Kelas {{ k.nama_kelas }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="bulan" class="form-select">
+                {% for m in range(1, 13) %}
+                <option value="{{ m }}" {% if bulan|int == m %}selected{% endif %}>Bulan {{ m }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="tahun" value="{{ tahun }}" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Tampilkan</button>
+        </div>
+    </form>
+
+    {% if rekap_data %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm text-center align-middle" style="font-size: 0.85rem;">
+            <thead class="table-dark">
+                <tr>
+                    <th rowspan="2">No</th>
+                    <th rowspan="2" style="text-align: left;">Nama Siswa</th>
+                    <th colspan="{{ days|length }}">Tanggal</th>
+                    <th colspan="4">Total</th>
+                </tr>
+                <tr>
+                    {% for d in days %}<th>{{ d }}</th>{% endfor %}
+                    <th>H</th><th>I</th><th>S</th><th>A</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rekap_data %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td style="text-align: left; white-space: nowrap;"><b>{{ row.nama }}</b></td>
+                    {% for d in days %}
+                    <td>{{ row.presensi.get(d, '-') }}</td>
+                    {% endfor %}
+                    <td class="bg-success text-white">{{ row.H }}</td>
+                    <td class="bg-info text-white">{{ row.I }}</td>
+                    <td class="bg-warning text-dark">{{ row.S }}</td>
+                    <td class="bg-danger text-white">{{ row.A }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <button onclick="window.print()" class="btn btn-secondary mt-3">Cetak Laporan / PDF</button>
+    {% endif %}
+</div>
+{% endblock %}

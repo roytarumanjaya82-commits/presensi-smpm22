@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm p-5 text-center bg-white rounded-3">
+    <h2 class="fw-bold text-primary mb-3">SISTEM PRESENSI SISWA</h2>
+    <h4 class="text-secondary mb-4">SMP Muhammadiyah 22 Setiabudi Pamulang</h4>
+    <p class="lead text-muted mb-4">Selamat datang di portal presensi harian untuk Guru Piket.</p>
+    <div class="d-flex justify-content-center gap-3">
+        <a href="/presensi" class="btn btn-primary btn-lg px-4">Form Presensi Piket</a>
+        <a href="/rekap-bulanan" class="btn btn-success btn-lg px-4">Rekap Bulanan</a>
+    </div>
+</div>
+{% endblock %}

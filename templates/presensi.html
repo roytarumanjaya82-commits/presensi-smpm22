@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm p-4 mb-4 bg-white rounded">
+    <h4 class="mb-3 text-primary fw-bold">Form Input Presensi Guru Piket</h4>
+    
+    <!-- Form Pilih Kelas & Tanggal -->
+    <form method="GET" action="/presensi" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <label class="form-label fw-bold">Pilih Kelas</label>
+            <select name="kelas_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Pilih Kelas (7.1 s/d 9.5) --</option>
+                {% for k in kelas_list %}
+                <option value="{{ k.id }}" {% if selected_kelas|int == k.id %}selected{% endif %}>
+                    Kelas {{ k.nama_kelas }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label class="form-label fw-bold">Tanggal Presensi</label>
+            <input type="date" name="tanggal" value="{{ selected_tanggal }}" class="form-control" onchange="this.form.submit()">
+        </div>
+    </form>
+
+    <!-- Tabel Daftar Siswa untuk Input Presensi -->
+    {% if siswa_list %}
+    <form method="POST" action="/presensi">
+        <input type="hidden" name="kelas_id" value="{{ selected_kelas }}">
+        <input type="hidden" name="tanggal" value="{{ selected_tanggal }}">
+        
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="5%">No</th>
+                        <th width="35%">Nama Siswa</th>
+                        <th width="10%">L/P</th>
+                        <th width="30%">Status Presensi</th>
+                        <th width="20%">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in siswa_list %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><b>{{ s.nama }}</b></td>
+                        <td>{{ s.jenis_kelamin }}</td>
+                        <td>
+                            {% for st in ['Hadir', 'Izin', 'Sakit', 'Alpa'] %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="status_{{ s.id }}" value="{{ st }}" {% if s.status == st %}checked{% endif %} id="st_{{ s.id }}_{{ st }}">
+                                <label class="form-check-label" for="st_{{ s.id }}_{{ st }}">{{ st }}</label>
+                            </div>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <input type="text" name="ket_{{ s.id }}" value="{{ s.keterangan }}" class="form-control form-control-sm" placeholder="Catatan opsional">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-success btn-lg w-100 mt-3">Simpan Presensi Kelas Ini</button>
+    </form>
+    {% else %}
+    <div class="alert alert-info mt-3" role="alert">
+        Silakan pilih kelas terlebih dahulu pada pilihan di atas untuk menampilkan daftar siswa.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

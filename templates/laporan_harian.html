@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm p-4 mb-4 bg-white rounded">
+    <h4 class="mb-3 text-primary fw-bold">Laporan Presensi Harian Siswa</h4>
+    
+    <form method="GET" action="/laporan-harian" class="row g-3 mb-4">
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Pilih Tanggal Laporan</label>
+            <input type="date" name="tanggal" value="{{ tanggal }}" class="form-control" onchange="this.form.submit()">
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+            <button onclick="window.print()" type="button" class="btn btn-secondary">Cetak / Export PDF</button>
+        </div>
+    </form>
+
+    {% if laporan %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Kelas</th>
+                    <th>NIS</th>
+                    <th>Nama Siswa</th>
+                    <th>Status</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in laporan %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><b>Kelas {{ row.nama_kelas }}</b></td>
+                    <td>{{ row.nis or '-' }}</td>
+                    <td><b>{{ row.nama }}</b></td>
+                    <td>
+                        {% if row.status == 'Hadir' %}<span class="badge bg-success">Hadir</span>
+                        {% elif row.status == 'Izin' %}<span class="badge bg-info">Izin</span>
+                        {% elif row.status == 'Sakit' %}<span class="badge bg-warning text-dark">Sakit</span>
+                        {% else %}<span class="badge bg-danger">Alpa</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ row.keterangan or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning mt-3" role="alert">
+        Belum ada data presensi yang diinput pada tanggal {{ tanggal }}.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
