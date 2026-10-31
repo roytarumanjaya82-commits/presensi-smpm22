@@ -1,0 +1,26 @@
+{% extends 'base_ortu.html' %}
+{% block judul %}Laporan ulangan{% endblock %}
+{% block content %}
+<form method="GET" action="/ortu/ulangan" class="mb-3">
+    <label class="form-label fw-bold" for="tanggal">Tanggal laporan</label>
+    <input class="form-control" id="tanggal" type="date" name="tanggal" value="{{ tanggal }}" onchange="this.form.submit()">
+</form>
+<article class="laporan">
+    <div class="text-center mb-3">
+        <div class="fw-bold">SMP MUHAMMADIYAH 22 SETIABUDI PAMULANG</div>
+        <div class="small text-muted">Laporan ulangan kelas {{ siswa.nama_kelas }}</div>
+    </div>
+    <h1 class="h4 fw-bold">LAPORAN ULANGAN</h1>
+    <p class="fw-bold">Hari/Tanggal: {{ hari_tanggal }}</p>
+    <p>Siswa: {{ siswa.nama }} · Kelas {{ siswa.nama_kelas }}</p>
+    {% if not pelajaran %}
+    <p class="text-muted">Belum dilaporkan.</p>
+    {% elif daftar_ulangan %}
+    {% for item in daftar_ulangan %}
+    <p><b>{{ item.mapel }}.</b> Besok ada ulangan{% if item.ulangan_ket %}: {{ item.ulangan_ket }}{% endif %}</p>
+    {% endfor %}
+    {% else %}
+    <p>Tidak ada ulangan besok.</p>
+    {% endif %}
+</article>
+{% endblock %}

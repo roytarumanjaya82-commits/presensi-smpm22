@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm p-4 mb-4 bg-white rounded">
+    <h4 class="mb-2 text-primary fw-bold">Hasil Pembelajaran Harian</h4>
+    <p class="text-muted">Isi materi, PR, dan ulangan. Password awal orang tua diisi di samping nama siswa. Mereka masuk dengan username dan password itu, dan bisa menggantinya jika lupa.</p>
+
+    <form method="GET" action="/hasil-belajar" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <label class="form-label fw-bold">Kelas</label>
+            <select name="kelas_id" class="form-select" style="min-height: 48px;" onchange="this.form.submit()">
+                <option value="">-- Pilih kelas --</option>
+                {% for k in kelas_list %}
+                <option value="{{ k.id }}" {% if selected_kelas|string == k.id|string %}selected{% endif %}>Kelas {{ k.nama_kelas }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label class="form-label fw-bold">Tanggal</label>
+            <input type="date" name="tanggal" value="{{ tanggal }}" class="form-control" style="min-height: 48px;" onchange="this.form.submit()">
+        </div>
+    </form>
+
+    {% if selected_kelas %}
+    <form method="POST" action="/hasil-belajar">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="kelas_id" value="{{ selected_kelas }}">
+        <input type="hidden" name="tanggal" value="{{ tanggal }}">
+
+        <h5 class="fw-bold">Mata pelajaran</h5>
+        {% for item in mapel_isi %}
+        <div class="border rounded p-3 mb-3">
+            <div class="fw-bold">{{ item.mapel }}</div>
+            {% if item.guru %}<div class="small text-muted mb-2">{{ item.guru }}</div>{% endif %}
+            <input type="hidden" name="mapel" value="{{ item.mapel }}">
+            <label class="form-label">Materi hari ini</label>
+            <textarea class="form-control mb-2" name="materi_{{ loop.index0 }}" rows="2" placeholder="Apa yang dipelajari">{{ item.materi }}</textarea>
+            <label class="form-label">PR / tugas</label>
+            <input class="form-control mb-2" name="tugas_{{ loop.index0 }}" value="{{ item.tugas }}" placeholder="Kosongkan jika tidak ada PR">
+            <div class="form-check" style="min-height: 44px;">
+                <input class="form-check-input" type="checkbox" name="ulangan_{{ loop.index0 }}" value="1" id="ulangan_{{ loop.index0 }}" {% if item.ulangan %}checked{% endif %}>
+                <label class="form-check-label" for="ulangan_{{ loop.index0 }}">Besok ada ulangan</label>
+            </div>
+            <input class="form-control" name="ulangan_ket_{{ loop.index0 }}" value="{{ item.ulangan_ket }}" placeholder="Materi ulangan, kalau ada">
+        </div>
+        {% else %}
+        <p class="text-muted">Kelas ini belum punya mata pelajaran di penugasan guru. Tambah satu di bawah.</p>
+        {% endfor %}
+
+        <div class="border rounded p-3 mb-4">
+            <div class="fw-bold mb-2">Tambah mata pelajaran hari ini</div>
+            <input class="form-control mb-2" name="mapel_baru" placeholder="Nama mata pelajaran" style="min-height: 48px;">
+            <textarea class="form-control mb-2" name="materi_baru" rows="2" placeholder="Materi"></textarea>
+            <label class="form-label">PR / tugas</label>
+            <input class="form-control mb-2" name="tugas_baru" placeholder="Kosongkan jika tidak ada PR">
+            <div class="form-check" style="min-height: 44px;">
+                <input class="form-check-input" type="checkbox" name="ulangan_baru" value="1" id="ulangan_baru">
+                <label class="form-check-label" for="ulangan_baru">Besok ada ulangan</label>
+            </div>
+            <input class="form-control" name="ulangan_ket_baru" placeholder="Materi ulangan, kalau ada">
+        </div>
+
+        <h5 class="fw-bold">Catatan untuk orang tua</h5>
+        <p class="text-muted">Isi catatan hanya jika ada pesan untuk anak tertentu. Username kosong akan memakai NIS. Password awal yang disimpan langsung bisa dipakai untuk masuk.</p>
+        <label class="form-label fw-bold" for="cari-siswa">Cari siswa</label>
+        <input id="cari-siswa" class="form-control mb-3" type="search" placeholder="Ketik nama" autocomplete="off" style="min-height: 48px;">
+        <p id="cari-siswa-kosong" class="text-muted" hidden>Tidak ada siswa dengan nama itu.</p>
+        {% for siswa in siswa_list %}
+        <div class="border rounded p-3 mb-2 siswa-catatan" data-cari="{{ siswa.nama|lower }}">
+            <input type="hidden" name="siswa_id" value="{{ siswa.id }}">
+            <div class="fw-bold">{{ siswa.nama }}</div>
+            <div class="small text-muted mb-2">NIS {{ siswa.nis or '-' }} · Kode sekolah {{ siswa.kode_ortu }}{% if siswa.username_ortu %} · Akun aktif: {{ siswa.username_ortu }}{% else %} · Belum ada password{% endif %}</div>
+            <div class="row g-2 mb-2">
+                <div class="col-md-4">
+                    <input class="form-control" form="akun-{{ siswa.id }}" name="username" value="{{ siswa.username_ortu or siswa.nis or '' }}" maxlength="32" autocomplete="off" aria-label="Username orang tua" style="min-height: 48px;">
+                </div>
+                <div class="col-md-4">
+                    <input class="form-control password-awal" form="akun-{{ siswa.id }}" name="password" maxlength="72" autocomplete="off" placeholder="Password awal" aria-label="Password awal" style="min-height: 48px;">
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button class="btn btn-outline-secondary flex-grow-1" type="button" style="min-height: 48px;" onclick="isiPassword(this)">Buatkan</button>
+                    <button class="btn btn-primary flex-grow-1" type="submit" form="akun-{{ siswa.id }}" style="min-height: 48px;">Simpan</button>
+                </div>
+            </div>
+            {% if siswa.username_ortu %}
+            <button class="btn btn-sm btn-outline-danger mb-2" type="submit" form="reset-{{ siswa.id }}" style="min-height: 44px;">Hapus akun orang tua</button>
+            {% endif %}
+            <input class="form-control" name="catatan_{{ siswa.id }}" value="{{ siswa.catatan }}" placeholder="Catatan untuk orang tua siswa ini">
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary mt-3" style="min-height: 48px;">Simpan hasil belajar</button>
+    </form>
+    {% for siswa in siswa_list %}
+    <form id="akun-{{ siswa.id }}" method="POST" action="/hasil-belajar" hidden>
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="aksi" value="password_awal">
+        <input type="hidden" name="siswa_id" value="{{ siswa.id }}">
+        <input type="hidden" name="kelas_id" value="{{ selected_kelas }}">
+        <input type="hidden" name="tanggal" value="{{ tanggal }}">
+    </form>
+    {% if siswa.username_ortu %}
+    <form id="reset-{{ siswa.id }}" method="POST" action="/hasil-belajar" hidden onsubmit="return confirm('Hapus akun orang tua siswa ini? Username dan password lama tidak bisa dipakai lagi.')">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="aksi" value="reset_ortu">
+        <input type="hidden" name="siswa_id" value="{{ siswa.id }}">
+        <input type="hidden" name="kelas_id" value="{{ selected_kelas }}">
+        <input type="hidden" name="tanggal" value="{{ tanggal }}">
+    </form>
+    {% endif %}
+    {% endfor %}
+    <script>
+        (function () {
+            var input = document.getElementById("cari-siswa");
+            var baris = document.querySelectorAll(".siswa-catatan");
+            var kosong = document.getElementById("cari-siswa-kosong");
+            if (!input) return;
+            window.isiPassword = function (tombol) {
+                var huruf = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                var hasil = "";
+                var acak = new Uint32Array(8);
+                crypto.getRandomValues(acak);
+                for (var i = 0; i < 8; i++) hasil += huruf[acak[i] % huruf.length];
+                var kolom = tombol.closest(".row").querySelector(".password-awal");
+                kolom.value = hasil;
+                kolom.focus();
+                kolom.select();
+            };
+            input.addEventListener("input", function () {
+                var kata = input.value.trim().toLowerCase();
+                var ketemu = 0;
+                baris.forEach(function (row) {
+                    var cocok = !kata || row.getAttribute("data-cari").indexOf(kata) !== -1;
+                    row.style.display = cocok ? "" : "none";
+                    if (cocok) ketemu += 1;
+                });
+                kosong.hidden = ketemu !== 0;
+            });
+        })();
+    </script>
+    {% endif %}
+</div>
+{% endblock %}

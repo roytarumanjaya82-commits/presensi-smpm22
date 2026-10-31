@@ -1,0 +1,33 @@
+{% extends 'base_ortu.html' %}
+{% block judul %}Laporan presensi{% endblock %}
+{% block content %}
+<form method="GET" action="/ortu/presensi" class="mb-3">
+    <label class="form-label fw-bold" for="tanggal">Tanggal laporan</label>
+    <input class="form-control" id="tanggal" type="date" name="tanggal" value="{{ tanggal }}" onchange="this.form.submit()">
+</form>
+<article class="laporan">
+    <div class="text-center mb-3">
+        <div class="fw-bold">SMP MUHAMMADIYAH 22 SETIABUDI PAMULANG</div>
+        <div class="small text-muted">Laporan presensi {{ siswa.nama }}</div>
+    </div>
+    <h1 class="h4 fw-bold">LAPORAN PRESENSI</h1>
+    <p class="fw-bold mb-1">Hari/Tanggal: {{ hari_tanggal }}</p>
+    <p>Siswa: {{ siswa.nama }} · Kelas {{ siswa.nama_kelas }}</p>
+    <h2>Kehadiran</h2>
+    {% if not anak %}
+    <p class="text-muted">Belum dicatat.</p>
+    {% else %}
+    <p>{{ anak.status }}{% if anak.terlambat %}, terlambat {{ anak.jam_terlambat or '' }}{% endif %}{% if anak.izin_pulang %}, izin pulang {{ anak.jam_pulang or '' }}{% if anak.alasan_pulang %} ({{ anak.alasan_pulang }}){% endif %}{% endif %}{% if anak.keterangan %} — {{ anak.keterangan }}{% endif %}</p>
+    {% endif %}
+    <h2>Tata tertib</h2>
+    {% if pelanggaran %}
+    <ul>{% for row in pelanggaran %}<li>{{ row.jenis }}{% if row.keterangan %} ({{ row.keterangan }}){% endif %}</li>{% endfor %}</ul>
+    {% else %}
+    <p class="text-muted">Tidak ada catatan pelanggaran.</p>
+    {% endif %}
+    {% if catatan %}
+    <h2>Catatan dari sekolah</h2>
+    <p>{{ catatan }}</p>
+    {% endif %}
+</article>
+{% endblock %}

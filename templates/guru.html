@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    select.form-select { min-height: 48px; }
+</style>
+<div class="card shadow-sm p-4 mb-4 bg-white rounded">
+    <h4 class="mb-2 text-primary fw-bold">Guru dan Kelas yang Diampu</h4>
+    <p class="text-muted">Kelas dan mata pelajaran diisi dari jadwal 2026/2027. Centang bisa diubah, lalu simpan.</p>
+
+    <form method="POST" action="/guru" class="mb-4">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <h5 class="fw-bold">Wali kelas</h5>
+        <div class="row g-2">
+            {% for k in kelas_list %}
+            <div class="col-md-3">
+                <label class="form-label mb-1">Kelas {{ k.nama_kelas }}</label>
+                <select class="form-select form-select-sm" name="wali_{{ k.id }}">
+                    <option value="">-</option>
+                    {% for guru in guru_list %}
+                    <option value="{{ guru.id }}" {% if k.wali_guru_id == guru.id %}selected{% endif %}>{{ guru.nama }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Simpan wali kelas</button>
+    </form>
+
+    <form method="POST" action="/guru" class="mb-4">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="aksi" value="piket">
+        <h5 class="fw-bold">Guru piket</h5>
+        <p class="text-muted">Tiga guru untuk tiap hari. Kalau ada yang diganti di tengah tahun, pilih nama baru lalu simpan.</p>
+        {% for hari in range(5) %}
+        <div class="border rounded p-3 mb-2">
+            <div class="fw-bold mb-2">{{ hari_piket[hari] }}</div>
+            <div class="row g-2">
+                {% for urutan in range(1, 4) %}
+                <div class="col-md-4">
+                    <label class="form-label mb-1" for="piket_{{ hari }}_{{ urutan }}">Piket {{ urutan }}</label>
+                    <select class="form-select" id="piket_{{ hari }}_{{ urutan }}" name="piket_{{ hari }}_{{ urutan }}">
+                        <option value="">-</option>
+                        {% for guru in guru_list %}
+                        <option value="{{ guru.id }}" {% if piket_terpilih.get((hari, urutan)) == guru.id %}selected{% endif %}>{{ guru.nama }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-2">Simpan guru piket</button>
+    </form>
+
+    <form method="POST" action="/guru">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle as-cards">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="4%">No</th>
+                        <th width="28%">Nama Guru</th>
+                        <th>Kelas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guru in guru_list %}
+                    <tr>
+                        <td data-label="No">{{ guru.urutan }}</td>
+                        <td class="card-title" data-label="Nama">
+                            <input type="hidden" name="guru_id" value="{{ guru.id }}">
+                            <input class="form-control form-control-sm" name="nama_{{ guru.id }}" value="{{ guru.nama }}">
+                            {% for mapel in guru.mapel %}
+                            <div class="small text-muted mt-1">{{ mapel.nama }}: {{ mapel.kelas }}</div>
+                            {% endfor %}
+                        </td>
+                        <td data-label="Kelas">
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for k in kelas_list %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="kelas_{{ guru.id }}" value="{{ k.id }}" id="gk_{{ guru.id }}_{{ k.id }}" {% if k.id in guru.kelas_ids %}checked{% endif %}>
+                                    <label class="form-check-label" for="gk_{{ guru.id }}_{{ k.id }}">{{ k.nama_kelas }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-success">Simpan penugasan</button>
+    </form>
+
+    <form method="POST" action="/guru" class="row g-2 mt-4">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="aksi" value="tambah">
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Tambah guru</label>
+            <input class="form-control" name="nama_baru" placeholder="Nama lengkap dan gelar" required>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-primary w-100">Tambah</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

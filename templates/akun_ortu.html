@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% if mode == 'daftar' %}Daftar{% else %}Atur ulang akun{% endif %} — SMP Muhammadiyah 22 Pamulang</title>
+    {% include '_pwa_head.html' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: #f4f7f5; color: #14281d; font-family: "Segoe UI", sans-serif; }
+        .kotak { width: min(440px, 100%); background: #fff; border: 1px solid #d5e4da; border-radius: 20px; padding: 28px 22px; }
+        .logo { width: 96px; height: auto; display: block; margin: 0 auto 12px; }
+        h1 { font-size: 1.35rem; text-align: center; color: #0f5c32; font-weight: 700; }
+        .btn-masuk { min-height: 48px; background: #0f5c32; border-color: #0f5c32; }
+        .btn-masuk:hover { background: #0c4a28; border-color: #0c4a28; }
+        .form-control { min-height: 48px; }
+        .form-control:focus { border-color: #0f5c32; box-shadow: 0 0 0 3px rgba(243, 213, 106, 0.8); }
+    </style>
+</head>
+<body>
+    <main class="kotak">
+        <img class="logo" src="{{ url_for('static', filename='logo_smp.jpeg') }}" alt="Logo SMP Muhammadiyah 22 Pamulang">
+        {% if mode == 'daftar' %}
+        <h1>Daftar orang tua</h1>
+        <p class="text-muted">Pakai NIS anak dan kode dari sekolah, lalu buat username dan password sendiri. Satu akun untuk satu siswa.</p>
+        {% else %}
+        <h1>Atur ulang akun</h1>
+        <p class="text-muted">Kalau lupa username atau password, isi NIS dan kode sekolah lagi, lalu buat username dan password yang baru.</p>
+        {% endif %}
+        {% if pesan %}
+        <div class="alert alert-danger" role="alert">{{ pesan }}</div>
+        {% endif %}
+        <form method="POST" action="{% if mode == 'daftar' %}/daftar{% else %}/lupa{% endif %}">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <label class="form-label fw-bold" for="nis">NIS anak</label>
+            <input class="form-control mb-3" id="nis" name="nis" required autocomplete="off" inputmode="numeric">
+            <label class="form-label fw-bold" for="kode">Kode dari sekolah</label>
+            <input class="form-control mb-3" id="kode" name="kode" required autocomplete="off">
+            <label class="form-label fw-bold" for="username">Username</label>
+            <input class="form-control mb-3" id="username" name="username" required minlength="4" maxlength="32" autocomplete="username" pattern="[A-Za-z0-9._]{4,32}">
+            <label class="form-label fw-bold" for="password">Password</label>
+            <input class="form-control mb-3" id="password" name="password" type="password" required minlength="6" maxlength="72" autocomplete="new-password">
+            <label class="form-label fw-bold" for="ulang">Ulangi password</label>
+            <input class="form-control mb-3" id="ulang" name="ulang" type="password" required minlength="6" maxlength="72" autocomplete="new-password">
+            <button class="btn btn-masuk btn-primary w-100" type="submit">{% if mode == 'daftar' %}Daftar{% else %}Simpan akun baru{% endif %}</button>
+        </form>
+        <p class="text-center mt-3 mb-0"><a href="/login">Kembali ke masuk</a></p>
+    </main>
+    {% include '_pwa_foot.html' %}
+</body>
+</html>

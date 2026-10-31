@@ -1,0 +1,50 @@
+<style>
+    .pwa-sheet {
+        position: fixed; inset: 0; z-index: 1200; display: flex; align-items: flex-end; justify-content: center;
+        padding: 12px; background: rgba(12, 28, 18, 0.28); opacity: 0; visibility: hidden;
+        transition: opacity 180ms ease, visibility 180ms ease;
+    }
+    .pwa-sheet.is-open { opacity: 1; visibility: visible; }
+    .pwa-sheet-card {
+        width: min(420px, 100%); background: #fff; border: 1px solid #d5e4da; border-radius: 18px;
+        padding: 16px 16px 14px; box-shadow: 0 10px 28px rgba(12, 28, 18, 0.16);
+        transform: translateY(12px); transition: transform 180ms ease;
+    }
+    .pwa-sheet.is-open .pwa-sheet-card { transform: translateY(0); }
+    .pwa-sheet-row { display: flex; gap: 12px; align-items: flex-start; }
+    .pwa-sheet-logo {
+        width: 48px; height: 48px; object-fit: contain; background: #fff; border: 1px solid #d5e4da;
+        border-radius: 12px; padding: 3px; flex: 0 0 auto;
+    }
+    .pwa-sheet-copy { flex: 1; min-width: 0; }
+    .pwa-sheet-copy strong { display: block; color: #0f5c32; font-size: 1rem; margin-bottom: 2px; }
+    .pwa-sheet-copy p { margin: 0; color: #3e5c4b; font-size: 0.92rem; line-height: 1.4; }
+    .pwa-sheet-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .pwa-sheet-actions button {
+        flex: 1; min-height: 44px; border-radius: 12px; font-weight: 600; font: inherit; cursor: pointer;
+    }
+    .pwa-sheet-later { border: 1px solid #d5e4da; background: #fff; color: #3e5c4b; }
+    .pwa-sheet-install { border: 0; background: #0f5c32; color: #fff; }
+    .pwa-sheet-ios { display: none; margin-top: 10px; font-size: 0.88rem; color: #3e5c4b; line-height: 1.4; }
+    .pwa-sheet.is-ios .pwa-sheet-ios { display: block; }
+    .pwa-sheet.is-ios .pwa-sheet-install { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+        .pwa-sheet, .pwa-sheet-card { transition: none; }
+    }
+</style>
+<div id="pwa-sheet" class="pwa-sheet" hidden>
+    <div class="pwa-sheet-card" role="dialog" aria-modal="true" aria-labelledby="pwa-sheet-title">
+        <div class="pwa-sheet-row">
+            <img class="pwa-sheet-logo" src="{{ url_for('static', filename='icons/icon-192.png') }}" alt="">
+            <div class="pwa-sheet-copy">
+                <strong id="pwa-sheet-title">Pasang di layar utama?</strong>
+                <p>Buka lebih cepat seperti aplikasi. Opsional, bisa dilewati.</p>
+                <p class="pwa-sheet-ios">Di iPhone: ketuk Bagikan, lalu <b>Add to Home Screen</b>.</p>
+            </div>
+        </div>
+        <div class="pwa-sheet-actions">
+            <button type="button" class="pwa-sheet-later" id="pwa-sheet-later">Nanti saja</button>
+            <button type="button" class="pwa-sheet-install" id="pwa-sheet-install">Pasang</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm p-4 p-md-5 text-center bg-white rounded-3">
+    <img class="school-logo" src="{{ url_for('static', filename='logo_smp.jpeg') }}" alt="Logo SMP Muhammadiyah 22 Pamulang" width="420" height="476">
+    <h2 class="fw-bold text-primary mb-3">SISTEM PRESENSI SISWA</h2>
+    <h4 class="text-secondary mb-3">SMP Muhammadiyah 22 Setiabudi Pamulang</h4>
+    <p class="lead text-muted mb-0">Selamat datang di portal presensi harian untuk Guru Piket. Pakai menu di samping untuk membuka form dan laporan.</p>
+</div>
+{% endblock %}

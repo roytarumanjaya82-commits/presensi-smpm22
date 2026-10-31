@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm p-4 mb-4 bg-white rounded">
+    <h4 class="mb-2 text-primary fw-bold">Import Data Siswa</h4>
+    <p class="text-muted">Setiap tahun ajaran, unggah daftar nilai terbaru. Siswa yang naik kelas dipindahkan, siswa baru ditambahkan, dan riwayat presensi tetap tersimpan.</p>
+    <p class="mb-3">Format file mengikuti daftar nilai: kolom <b>No</b>, <b>NIS</b>, <b>Nama</b>, <b>L/P</b>, dan <b>Kelas</b> (contoh 7.1).</p>
+    <form method="POST" action="/import-siswa" enctype="multipart/form-data" class="row g-3 align-items-end">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Tahun ajaran</label>
+            <input type="number" name="ajaran" value="{{ ajaran }}" class="form-control" min="2000" max="2100" required>
+            <div class="form-text">Diisi tahun awal. 2026 berarti 2026/2027.</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-bold">File Excel</label>
+            <input type="file" name="berkas" accept=".xlsx,.xlsm" class="form-control" required>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100">Baca File</button>
+        </div>
+    </form>
+</div>
+
+{% if notes %}
+<div class="alert alert-warning">
+    {% for note in notes %}<div>{{ note }}</div>{% endfor %}
+</div>
+{% endif %}
+
+{% if preview %}
+<div class="card shadow-sm p-4 mb-4 bg-white rounded">
+    <h5 class="fw-bold mb-3">Pratinjau tahun ajaran {{ ajaran }}/{{ ajaran + 1 }}</h5>
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-3"><div class="border rounded p-3"><div class="text-muted">Siswa baru</div><div class="fs-4 fw-bold">{{ preview.counts.baru }}</div></div></div>
+        <div class="col-6 col-md-3"><div class="border rounded p-3"><div class="text-muted">Diperbarui</div><div class="fs-4 fw-bold">{{ preview.counts.ubah }}</div></div></div>
+        <div class="col-6 col-md-3"><div class="border rounded p-3"><div class="text-muted">Tetap</div><div class="fs-4 fw-bold">{{ preview.counts.tetap }}</div></div></div>
+        <div class="col-6 col-md-3"><div class="border rounded p-3"><div class="text-muted">Tidak ada di file</div><div class="fs-4 fw-bold">{{ preview.keluar|length }}</div></div></div>
+    </div>
+    <div class="table-responsive mb-3">
+        <table class="table table-sm table-bordered as-cards">
+            <thead class="table-light"><tr><th>Kelas</th><th>Jumlah di file</th></tr></thead>
+            <tbody>
+                {% for kelas, jumlah in preview.per_kelas %}
+                <tr><td class="card-title" data-label="Kelas">Kelas {{ kelas }}</td><td data-label="Jumlah">{{ jumlah }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if preview.keluar %}
+    <p class="mb-1 fw-bold">Siswa tahun ini yang tidak ada di file akan disembunyikan dari form presensi. Riwayat lama tidak dihapus.</p>
+    <ul>
+        {% for siswa in preview.keluar[:20] %}
+        <li>{{ siswa.nama }}{% if siswa.kelas %} (kelas {{ siswa.kelas }}){% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="POST" action="/import-siswa/simpan">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="token" value="{{ preview.token }}">
+        <button type="submit" class="btn btn-success">Simpan ke Database</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

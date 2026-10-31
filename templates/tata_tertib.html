@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm p-4 mb-4 bg-white rounded">
+    <h4 class="mb-3 text-primary fw-bold">Siswa yang Melanggar Tata Tertib</h4>
+
+    <form method="GET" action="/tata-tertib" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <label class="form-label fw-bold">Kelas</label>
+            <select name="kelas_id" class="form-select" onchange="this.form.submit()">
+                <option value="">Semua kelas</option>
+                {% for k in kelas_list %}
+                <option value="{{ k.id }}" {% if selected_kelas|string == k.id|string %}selected{% endif %}>Kelas {{ k.nama_kelas }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label class="form-label fw-bold">Tanggal</label>
+            <input type="date" name="tanggal" value="{{ tanggal }}" class="form-control" onchange="this.form.submit()">
+        </div>
+    </form>
+
+    <form method="POST" action="/tata-tertib" class="row g-3 mb-4">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="kelas_id" value="{{ selected_kelas }}">
+        <input type="hidden" name="tanggal" value="{{ tanggal }}">
+        <div class="col-md-4">
+            <label class="form-label fw-bold">Siswa</label>
+            <select name="siswa_id" class="form-select" required {% if not siswa_list %}disabled{% endif %}>
+                <option value="">-- Pilih siswa --</option>
+                {% for s in siswa_list %}
+                <option value="{{ s.id }}">{{ s.nama }}</option>
+                {% endfor %}
+            </select>
+            {% if not selected_kelas %}
+            <div class="form-text">Pilih kelas dulu untuk menampilkan siswa.</div>
+            {% endif %}
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Jenis pelanggaran</label>
+            <select name="jenis" class="form-select" required>
+                <option value="">-- Pilih --</option>
+                {% for jenis in jenis_list %}
+                <option value="{{ jenis }}">{{ jenis }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Keterangan</label>
+            <input type="text" name="keterangan" class="form-control" maxlength="255" placeholder="Contoh: tidak memakai dasi">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-warning w-100" {% if not siswa_list %}disabled{% endif %}>Catat</button>
+        </div>
+    </form>
+
+    {% if catatan %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle as-cards">
+            <thead class="table-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Kelas</th>
+                    <th>Nama Siswa</th>
+                    <th>Pelanggaran</th>
+                    <th>Keterangan</th>
+                    <th width="8%"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in catatan %}
+                <tr>
+                    <td data-label="No">{{ loop.index }}</td>
+                    <td data-label="Kelas">Kelas {{ row.nama_kelas }}</td>
+                    <td class="card-title" data-label="Nama"><b>{{ row.nama }}</b></td>
+                    <td data-label="Pelanggaran">{{ row.jenis }}</td>
+                    <td data-label="Keterangan">{{ row.keterangan or '-' }}</td>
+                    <td data-label="Aksi">
+                        <form method="POST" action="/tata-tertib" onsubmit="return confirm('Hapus catatan ini?')">
+                            <input type="hidden" name="csrf" value="{{ csrf }}">
+                            <input type="hidden" name="aksi" value="hapus">
+                            <input type="hidden" name="id" value="{{ row.id }}">
+                            <input type="hidden" name="kelas_id" value="{{ selected_kelas }}">
+                            <input type="hidden" name="tanggal" value="{{ tanggal }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mb-0">Belum ada pelanggaran tercatat pada tanggal {{ tanggal }}.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base_ortu.html' %}
+{% block judul %}Pengumuman kegiatan{% endblock %}
+{% block content %}
+<article class="laporan">
+    <div class="text-center mb-3">
+        <div class="fw-bold">SMP MUHAMMADIYAH 22 SETIABUDI PAMULANG</div>
+        <div class="small text-muted">Pengumuman untuk kelas {{ siswa.nama_kelas }}</div>
+    </div>
+    <h1 class="h4 fw-bold">PENGUMUMAN KEGIATAN</h1>
+    <p>Siswa: {{ siswa.nama }} · Kelas {{ siswa.nama_kelas }}</p>
+    {% for item in daftar %}
+    <section class="border-top pt-3 mt-3">
+        <div class="small text-muted">{{ item.tanggal }}{% if item.nama_kelas %} · {{ item.nama_kelas }}{% else %} · Semua kelas{% endif %}</div>
+        <h2 class="h5 fw-bold mt-1">{{ item.judul }}</h2>
+        <p class="mb-0" style="white-space: pre-wrap;">{{ item.isi }}</p>
+    </section>
+    {% else %}
+    <p class="text-muted">Belum ada pengumuman.</p>
+    {% endfor %}
+</article>
+{% endblock %}

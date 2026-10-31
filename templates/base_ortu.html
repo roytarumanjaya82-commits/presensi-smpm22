@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block judul %}Laporan Orang Tua{% endblock %} — SMP Muhammadiyah 22 Pamulang</title>
+    {% include '_pwa_head.html' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --gold: #f3d56a; --sidebar: 272px; }
+        body { margin: 0; background: #f4f7f5; color: #14281d; font-family: "Segoe UI", sans-serif; }
+        .app-sidebar {
+            position: fixed; z-index: 40; inset: 0 auto 0 0; width: min(var(--sidebar), 88vw);
+            background: #0c3d24; color: #f7f3e8; display: flex; flex-direction: column;
+            padding: 18px 14px 20px; transform: translateX(-105%); transition: transform 220ms ease;
+        }
+        .app-sidebar.is-open { transform: translateX(0); }
+        .brand { display: flex; align-items: center; gap: 12px; color: var(--gold); text-decoration: none; padding: 6px 8px 16px; border-bottom: 1px solid rgba(243, 213, 106, 0.35); margin-bottom: 12px; }
+        .brand-mark { width: 58px; height: 58px; object-fit: contain; background: #fff; border-radius: 12px; padding: 3px; }
+        .brand-name { font-weight: 700; line-height: 1.2; }
+        .brand-name small { display: block; color: #d7e7dc; font-weight: 600; }
+        .side-nav { display: flex; flex-direction: column; gap: 4px; overflow: auto; flex: 1; }
+        .side-link { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px 12px; border-radius: 12px; color: #f4f7f5; text-decoration: none; font-weight: 600; }
+        .side-link svg { width: 22px; height: 22px; flex: 0 0 auto; }
+        .side-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .side-link.is-active { background: var(--gold); color: #1c2b14; }
+        button.side-link { width: 100%; border: 0; background: transparent; text-align: left; font: inherit; margin-top: auto; cursor: pointer; }
+        .nav-backdrop { position: fixed; inset: 0; z-index: 30; background: rgba(12, 28, 18, 0.46); border: 0; }
+        .nav-backdrop[hidden] { display: none; }
+        .app-topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 8px 12px; background: #0c3d24; color: var(--gold); }
+        .menu-btn { width: 48px; height: 48px; border: 0; border-radius: 12px; background: transparent; color: var(--gold); cursor: pointer; }
+        .topbar-logo { width: 40px; height: 40px; object-fit: contain; background: #fff; border-radius: 8px; padding: 2px; }
+        .app-content { padding: 18px 14px 32px; }
+        .laporan { background: #fff; border: 1px solid #d5e4da; border-radius: 16px; padding: 20px 16px 28px; }
+        .laporan h2 { font-size: 1.15rem; margin-top: 1.4rem; }
+        .tabel-absen { width: 100%; table-layout: fixed; }
+        .tabel-absen .kol-status { width: 1.75rem; text-align: center; white-space: nowrap; }
+        .anak { font-weight: 700; }
+        .form-control { min-height: 48px; }
+        @media (min-width: 992px) {
+            .app-sidebar { transform: none; width: var(--sidebar); }
+            .app-main { margin-left: var(--sidebar); }
+            .app-topbar { display: none; }
+            .nav-backdrop { display: none !important; }
+            .app-content { padding: 28px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .app-sidebar { transition: none; } }
+    </style>
+</head>
+<body>
+    {% set path = request.path %}
+    <aside id="sidebar" class="app-sidebar" aria-label="Menu laporan">
+        <a class="brand" href="/ortu/presensi">
+            <img class="brand-mark" src="{{ url_for('static', filename='logo_smp.jpeg') }}" alt="Logo SMP Muhammadiyah 22 Pamulang">
+            <span class="brand-name">SMPM 22<small>Orang tua</small></span>
+        </a>
+        <nav class="side-nav">
+            <a class="side-link {% if path.startswith('/ortu/presensi') %}is-active{% endif %}" href="/ortu/presensi">Laporan presensi</a>
+            <a class="side-link {% if path.startswith('/ortu/tugas') %}is-active{% endif %}" href="/ortu/tugas">Laporan tugas / PR</a>
+            <a class="side-link {% if path.startswith('/ortu/ulangan') %}is-active{% endif %}" href="/ortu/ulangan">Laporan ulangan</a>
+            <a class="side-link {% if path.startswith('/ortu/pengumuman') %}is-active{% endif %}" href="/ortu/pengumuman">Pengumuman kegiatan</a>
+        </nav>
+        <form method="POST" action="/ortu/keluar">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <button type="submit" class="side-link">Keluar</button>
+        </form>
+    </aside>
+    <button type="button" class="nav-backdrop" hidden aria-label="Tutup menu"></button>
+    <div class="app-main">
+        <header class="app-topbar">
+            <button type="button" class="menu-btn" aria-controls="sidebar" aria-expanded="false" aria-label="Buka menu">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            </button>
+            <img class="topbar-logo" src="{{ url_for('static', filename='logo_smp.jpeg') }}" alt="">
+            <span class="fw-bold">Laporan orang tua</span>
+        </header>
+        <div class="app-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    <script>
+        (function () {
+            var sidebar = document.getElementById("sidebar");
+            var button = document.querySelector(".menu-btn");
+            var backdrop = document.querySelector(".nav-backdrop");
+            function setOpen(open) {
+                sidebar.classList.toggle("is-open", open);
+                button.setAttribute("aria-expanded", open ? "true" : "false");
+                button.setAttribute("aria-label", open ? "Tutup menu" : "Buka menu");
+                backdrop.hidden = !open;
+            }
+            button.addEventListener("click", function () { setOpen(!sidebar.classList.contains("is-open")); });
+            backdrop.addEventListener("click", function () { setOpen(false); });
+            sidebar.querySelectorAll("a").forEach(function (link) { link.addEventListener("click", function () { setOpen(false); }); });
+            document.addEventListener("keydown", function (event) { if (event.key === "Escape") setOpen(false); });
+        })();
+    </script>
+    {% include '_pwa_foot.html' %}
+</body>
+</html>

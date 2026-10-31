@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .laporan-sheet { max-width: 820px; }
+    .laporan-sheet h4, .laporan-sheet h5 { letter-spacing: 0.02em; }
+    .laporan-sheet ul { margin-bottom: 0.75rem; }
+    .ttd { display: flex; }
+    .tabel-absen { width: 100%; table-layout: fixed; }
+    .tabel-absen th, .tabel-absen td { vertical-align: middle; }
+    .tabel-absen .kol-kelas { width: 2.6rem; }
+    .tabel-absen .kol-status { width: 1.75rem; text-align: center; white-space: nowrap; padding-left: 0; padding-right: 0; }
+    .tabel-absen .kol-ket { width: 4.4rem; }
+    .tabel-absen .nama { overflow-wrap: anywhere; }
+    @media print {
+        nav, .no-print, .alert { display: none !important; }
+        body { background: #fff; }
+        .container { max-width: 100%; }
+        .card { border: 0; box-shadow: none !important; padding: 0 !important; }
+        .laporan-sheet { max-width: none; }
+        h4, h5, .catatan-blok, .ttd { break-inside: avoid; break-before: avoid; }
+        @page { margin: 1.4cm; }
+    }
+</style>
+<div class="card shadow-sm p-4 mb-4 bg-white rounded laporan-sheet">
+    <form method="GET" action="/laporan-harian" class="row g-3 mb-4 no-print">
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Pilih Tanggal Laporan</label>
+            <input type="date" name="tanggal" value="{{ tanggal }}" class="form-control" onchange="this.form.submit()">
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+            <button onclick="window.print()" type="button" class="btn btn-secondary">Cetak / Export PDF</button>
+        </div>
+    </form>
+
+    <div class="text-center mb-3 kop">
+        <div class="fw-bold">SMP MUHAMMADIYAH 22 SETIABUDI PAMULANG</div>
+        <div class="small text-muted">Laporan Harian Guru Piket</div>
+    </div>
+
+    <h4 class="fw-bold mb-1">LAPORAN HARIAN PIKET SISWA</h4>
+    <p class="fw-bold mb-3">Hari/Tanggal: {{ hari_tanggal }}</p>
+    <ul>
+        <li>Siswa terlambat: {% if terlambat %}{{ terlambat|length }} siswa{% else %}Nihil{% endif %}</li>
+        <li>Izin pulang: {% if pulang %}{{ pulang|length }} siswa{% else %}-{% endif %}</li>
+        <li>Siswa tidak hadir: {{ tidak_hadir|length }} siswa, terdiri dari:
+            <ul>
+                <li>Sakit: {{ sakit }} siswa</li>
+                <li>Izin: {{ izin }} siswa</li>
+                <li>Alfa: {{ alpa }} siswa</li>
+            </ul>
+        </li>
+        <li>Pelanggaran tata tertib: {% if pelanggaran %}{{ pelanggaran|length }} siswa{% else %}Nihil{% endif %}</li>
+    </ul>
+
+    <h5 class="fw-bold mt-4">Daftar peserta didik yang terlambat</h5>
+    {% if terlambat %}
+    <table class="table table-bordered table-sm align-middle as-cards">
+        <thead class="table-light"><tr><th>No</th><th>Nama Siswa</th><th>Kelas</th><th>Jam</th></tr></thead>
+        <tbody>
+            {% for row in terlambat %}
+            <tr>
+                <td data-label="No">{{ loop.index }}</td>
+                <td class="card-title" data-label="Nama">{{ row.nama }}</td>
+                <td data-label="Kelas">{{ row.nama_kelas }}</td>
+                <td data-label="Jam">{{ row.jam_terlambat or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">Nihil</p>
+    {% endif %}
+
+    <h5 class="fw-bold mt-4">Daftar peserta didik yang izin pulang</h5>
+    {% if pulang %}
+    <table class="table table-bordered table-sm align-middle as-cards">
+        <thead class="table-light"><tr><th>No</th><th>Nama Siswa</th><th>Kelas</th><th>Jam</th><th>Alasan</th></tr></thead>
+        <tbody>
+            {% for row in pulang %}
+            <tr>
+                <td data-label="No">{{ loop.index }}</td>
+                <td class="card-title" data-label="Nama">{{ row.nama }}</td>
+                <td data-label="Kelas">{{ row.nama_kelas }}</td>
+                <td data-label="Jam">{{ row.jam_pulang or '-' }}</td>
+                <td data-label="Alasan">{{ row.alasan_pulang or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">Nihil</p>
+    {% endif %}
+
+    <h5 class="fw-bold mt-4">Daftar peserta didik yang tidak hadir</h5>
+    {% if kelas_absen %}
+    <table class="table table-bordered table-sm align-middle tabel-absen">
+        <thead class="table-light">
+            <tr>
+                <th class="kol-kelas">Kelas</th>
+                <th>Nama Siswa</th>
+                <th class="kol-status">S</th>
+                <th class="kol-status">I</th>
+                <th class="kol-status">A</th>
+                <th class="kol-ket">Ket.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nama_kelas, rows in kelas_absen %}
+            {% for row in rows %}
+            <tr>
+                <td class="kol-kelas">{{ nama_kelas }}</td>
+                <td class="nama">{{ row.nama }}</td>
+                <td class="kol-status">{% if row.status == 'Sakit' %}✓{% endif %}</td>
+                <td class="kol-status">{% if row.status == 'Izin' %}✓{% endif %}</td>
+                <td class="kol-status">{% if row.status == 'Alpa' %}✓{% endif %}</td>
+                <td class="kol-ket">{{ row.keterangan or '' }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">Nihil</p>
+    {% endif %}
+
+    {% if pelanggaran %}
+    <h5 class="fw-bold mt-4">Pelanggaran tata tertib</h5>
+    <ul>
+        {% for row in pelanggaran %}
+        <li>{{ row.nama }} — Kelas {{ row.nama_kelas }}: {{ row.jenis }}{% if row.keterangan %} ({{ row.keterangan }}){% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <h4 class="fw-bold mt-5 mb-3">LAPORAN HARIAN PIKET GURU</h4>
+    <p class="fw-bold mb-2">Guru piket</p>
+    {% if guru_piket %}
+    <ol class="mb-3">
+        {% for nama in guru_piket %}
+        <li>{{ nama }}</li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p class="text-muted">Tidak ada jadwal guru piket pada hari ini.</p>
+    {% endif %}
+    <ul>
+        <li>Tim penyambut: {{ piket.tim_penyambut or '-' }}</li>
+        {% if sudah_guru %}
+        <li>Guru hadir ke sekolah: {{ guru_hadir }}</li>
+        <li>Guru tidak hadir: {{ guru_absen|length }}{% if guru_absen %} ({{ guru_absen|map(attribute='alasan')|select|join(', ') }}){% endif %}</li>
+        <li>Guru pelatihan: {{ guru_pelatihan|length }}</li>
+        <li>Guru terlambat: {% if guru_telat %}{{ guru_telat|map(attribute='nama')|join(', ') }}{% else %}Nihil{% endif %}</li>
+        <li>Guru izin pulang: {{ guru_pulang|length }}</li>
+        {% else %}
+        <li>Guru hadir ke sekolah: {{ piket.guru_hadir or '-' }}</li>
+        <li>Guru tidak hadir: {{ piket.guru_tidak_hadir or '-' }}</li>
+        <li>Guru pelatihan: {{ piket.guru_pelatihan or '-' }}</li>
+        <li>Guru terlambat: {{ piket.guru_terlambat or '-' }}</li>
+        <li>Guru izin pulang: {{ piket.guru_izin_pulang or '-' }}</li>
+        {% endif %}
+        <li>Daftar kelas kosong: {{ piket.kelas_kosong or '-' }}</li>
+    </ul>
+
+    <div class="catatan-blok">
+        <h5 class="fw-bold mt-4">Catatan kejadian penting</h5>
+        <p>{{ piket.catatan or 'Nihil' }}</p>
+    </div>
+
+    <div class="ttd justify-content-between text-center mt-5">
+        {% for nama in guru_piket %}
+        <div>
+            <div>Piket {{ loop.index }}</div>
+            <div style="height: 72px"></div>
+            <div class="fw-bold">{{ nama }}</div>
+        </div>
+        {% else %}
+        {% for n in [1, 2, 3] %}
+        <div>
+            <div>Piket {{ n }}</div>
+            <div style="height: 72px"></div>
+            <div>........................</div>
+        </div>
+        {% endfor %}
+        {% endfor %}
+    </div>
+    <div class="ttd justify-content-center text-center mt-4">
+        <div>
+            <div>Mengetahui,</div>
+            <div>Kepala Sekolah</div>
+            <div style="height: 72px"></div>
+            <div class="fw-bold">Ikhsan Saepul Munir, S.Pd.</div>
+        </div>
+    </div>
+
+    <form method="POST" action="/laporan-harian" class="mt-2 no-print">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="tanggal" value="{{ tanggal }}">
+        <label class="form-label fw-bold" for="cari-guru">Cari guru</label>
+        <input id="cari-guru" class="form-control mb-3" type="search" placeholder="Ketik nama guru" autocomplete="off" style="min-height: 48px;">
+        <p id="cari-guru-kosong" class="text-muted" hidden>Tidak ada guru dengan nama itu.</p>
+        <div class="table-responsive mb-3">
+            <table id="daftar-guru" class="table table-sm table-bordered align-middle as-cards">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nama Guru</th>
+                        <th>Kelas</th>
+                        <th>Kehadiran</th>
+                        <th>Terlambat</th>
+                        <th>Izin pulang</th>
+                        <th>Alasan tidak hadir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guru in daftar_guru %}
+                    <tr data-cari="{{ (guru.nama ~ ' ' ~ (guru.kelas or ''))|lower }}">
+                        <td class="card-title" data-label="Nama">
+                            <input type="hidden" name="guru_id" value="{{ guru.id }}">
+                            {{ guru.nama }}
+                        </td>
+                        <td data-label="Kelas">{{ guru.kelas or '-' }}</td>
+                        <td data-label="Kehadiran">
+                            {% for st in ['Hadir', 'Tidak Hadir', 'Pelatihan'] %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="gstatus_{{ guru.id }}" value="{{ st }}" {% if guru.status == st %}checked{% endif %}>
+                                <label class="form-check-label">{{ st }}</label>
+                            </div>
+                            {% endfor %}
+                        </td>
+                        <td data-label="Terlambat"><input class="form-check-input" type="checkbox" name="gterlambat_{{ guru.id }}" value="1" {% if guru.terlambat %}checked{% endif %}></td>
+                        <td data-label="Izin pulang"><input class="form-check-input" type="checkbox" name="gpulang_{{ guru.id }}" value="1" {% if guru.izin_pulang %}checked{% endif %}></td>
+                        <td data-label="Alasan"><input class="form-control form-control-sm" name="galasan_{{ guru.id }}" value="{{ guru.alasan }}" placeholder="sakit / cuti"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Tim penyambut</label>
+            <input class="form-control" name="tim_penyambut" value="{{ piket.tim_penyambut }}" placeholder="8 orang">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Daftar kelas kosong</label>
+            <input class="form-control" name="kelas_kosong" value="{{ piket.kelas_kosong }}" placeholder="0">
+        </div>
+        <div class="col-12">
+            <label class="form-label">Catatan kejadian penting</label>
+            <textarea class="form-control" name="catatan" rows="3" placeholder="Kosongkan jika nihil">{{ piket.catatan or '' }}</textarea>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Simpan laporan guru</button>
+        </div>
+        </div>
+    </form>
+    <script>
+        (function () {
+            var input = document.getElementById("cari-guru");
+            var baris = document.querySelectorAll("#daftar-guru tbody tr");
+            var kosong = document.getElementById("cari-guru-kosong");
+            input.addEventListener("input", function () {
+                var kata = input.value.trim().toLowerCase();
+                var ketemu = 0;
+                baris.forEach(function (row) {
+                    var cocok = !kata || row.getAttribute("data-cari").indexOf(kata) !== -1;
+                    row.style.display = cocok ? "" : "none";
+                    if (cocok) ketemu += 1;
+                });
+                kosong.hidden = ketemu !== 0;
+            });
+        })();
+    </script>
+</div>
+{% endblock %}

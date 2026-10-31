@@ -1,0 +1,26 @@
+{% extends 'base_ortu.html' %}
+{% block judul %}Laporan tugas / PR{% endblock %}
+{% block content %}
+<form method="GET" action="/ortu/tugas" class="mb-3">
+    <label class="form-label fw-bold" for="tanggal">Tanggal laporan</label>
+    <input class="form-control" id="tanggal" type="date" name="tanggal" value="{{ tanggal }}" onchange="this.form.submit()">
+</form>
+<article class="laporan">
+    <div class="text-center mb-3">
+        <div class="fw-bold">SMP MUHAMMADIYAH 22 SETIABUDI PAMULANG</div>
+        <div class="small text-muted">Laporan tugas / PR kelas {{ siswa.nama_kelas }}</div>
+    </div>
+    <h1 class="h4 fw-bold">LAPORAN TUGAS / PR</h1>
+    <p class="fw-bold">Hari/Tanggal: {{ hari_tanggal }}</p>
+    <p>Siswa: {{ siswa.nama }} · Kelas {{ siswa.nama_kelas }}</p>
+    {% if not pelajaran %}
+    <p class="text-muted">Belum dilaporkan.</p>
+    {% elif pr %}
+    {% for item in pr %}
+    <p><b>{{ item.mapel }}.</b> {{ item.tugas }}</p>
+    {% endfor %}
+    {% else %}
+    <p>Tidak ada PR.</p>
+    {% endif %}
+</article>
+{% endblock %}

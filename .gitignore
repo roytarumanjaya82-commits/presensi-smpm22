@@ -1,0 +1,22 @@
+.env
+.env.*
+!.env.example
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.zip
+password-awal-ortu.txt
+password-awal-ortu-sisa.txt
+presensi-smpm22-main/
+WhatsApp Unknown*/
+*.frm
+*.ibd
+*.MYD
+*.MYI
+db.opt
+.idea/
+.vscode/
+*.log
+_tmp/
+/tmp/
